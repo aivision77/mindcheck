@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파스텔 캡슐 디지털 시계 위젯</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Jua, Gaegu, Gowun Dodum, Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Gaegu:wght@400;700&family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            jua: ['Jua', 'sans-serif'],
+            gaegu: ['Gaegu', 'cursive'],
+            gowun: ['Gowun Dodum', 'sans-serif'],
+            fredoka: ['Fredoka', 'sans-serif'],
+          },
+          boxShadow: {
+            'capsule': '0 25px 50px -12px rgba(255, 182, 193, 0.45), 0 10px 20px -5px rgba(166, 193, 238, 0.35), inset 0 3px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(0, 0, 0, 0.08)',
+            'capsule-glow': '0 0 30px rgba(255, 192, 203, 0.6), 0 20px 40px rgba(135, 206, 235, 0.4)',
+            'button-soft': '0 4px 10px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.8)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 50%, #fffbf8 0%, #f3f4f6 100%);
+      font-family: 'Jua', sans-serif;
+      user-select: none;
+    }
+
+    /* Gradient Presets */
+    .theme-pastel-pink-sky {
+      background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+    }
+
+    .theme-cotton-candy {
+      background: linear-gradient(135deg, #ffb3ba 0%, #ffdfba 50%, #bae1ff 100%);
+    }
+
+    .theme-mint-lavender {
+      background: linear-gradient(135deg, #b5ead7 0%, #c7ceea 100%);
+    }
+
+    .theme-sunset-glow {
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+    }
+
+    /* Pulse effect for colon separator */
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.92); }
+    }
+
+    .colon-blink {
+      animation: pulse-soft 1s infinite ease-in-out;
+    }
+
+    /* Glassmorphism background container */
+    .glass-bg {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* Glossy reflection highlight on capsule top */
+    .capsule-highlight {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 text-gray-700 relative overflow-x-hidden">
+
+  <!-- Subtle decorative ambient background elements -->
+  <div class="absolute -top-20 -left-20 w-72 h-72 bg-pink-200/40 rounded-full filter blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-sky-200/50 rounded-full filter blur-3xl pointer-events-none"></div>
+
+  <!-- Header Branding -->
+  <header class="mb-8 text-center z-10">
+    <h1 class="text-2xl sm:text-3xl font-jua text-gray-600 tracking-wide flex items-center justify-center gap-2">
+      <i class="fa-regular font-bold fa-clock text-pink-400"></i>
+      파스텔 디지털 시계
+    </h1>
+    <p class="text-xs sm:text-sm text-gray-400 font-gowun mt-1">부드러운 그러데이션과 입체감 있는 캡슐 위젯</p>
+  </header>
+
+  <!-- Main Wrapper -->
+  <main class="w-full max-w-4xl flex flex-col items-center justify-center gap-8 z-10">
+
+    <!-- CAPSULE CLOCK WIDGET -->
+    <div id="capsuleWidget" class="relative group w-full max-w-2xl transition-all duration-500 transform hover:-translate-y-1">
+      
+      <!-- Outer Capsule Outer Body -->
+      <div id="clockBg" class="theme-pastel-pink-sky relative rounded-full p-6 sm:p-10 shadow-capsule transition-all duration-700 border-4 border-white/60 overflow-hidden flex flex-col items-center justify-center">
+        
+        <!-- Top Reflection Gloss -->
+        <div class="absolute top-0 left-6 right-6 h-1/2 rounded-t-full capsule-highlight pointer-events-none"></div>
+
+        <!-- Inner Content Holder -->
+        <div class="relative z-10 flex flex-col items-center justify-center w-full text-center py-2 sm:py-4">
+          
+          <!-- Date & AM/PM Badge Row -->
+          <div class="flex items-center justify-center gap-3 mb-2 sm:mb-4 flex-wrap">
+            <span id="ampmBadge" class="px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-xs sm:text-sm font-bold text-gray-600 shadow-button-soft tracking-wider">
+              AM
+            </span>
+            <span id="dateDisplay" class="px-4 py-1 bg-white/70 backdrop-blur-md rounded-full text-xs sm:text-sm font-bold text-gray-600 shadow-button-soft tracking-wide">
+              2026년 8월 18일 화요일
+            </span>
+          </div>
+
+          <!-- TIME DISPLAY (Hours : Minutes : Seconds) -->
+          <div class="flex items-center justify-center text-gray-700 select-none tracking-tight">
+            <!-- Hours -->
+            <span id="hours" class="font-jua text-5xl sm:text-7xl md:text-8xl drop-shadow-sm text-[#374151]">
+              10
+            </span>
+            
+            <!-- Separator 1 -->
+            <span class="font-jua text-4xl sm:text-6xl md:text-7xl mx-1 sm:mx-2 colon-blink text-[#4b5563] -translate-y-1">:</span>
+            
+            <!-- Minutes -->
+            <span id="minutes" class="font-jua text-5xl sm:text-7xl md:text-8xl drop-shadow-sm text-[#374151]">
+              24
+            </span>
+            
+            <!-- Separator 2 (Only visible when seconds are enabled) -->
+            <span id="secColon" class="font-jua text-4xl sm:text-6xl md:text-7xl mx-1 sm:mx-2 colon-blink text-[#4b5563] -translate-y-1">:</span>
+            
+            <!-- Seconds -->
+            <span id="seconds" class="font-jua text-5xl sm:text-7xl md:text-8xl drop-shadow-sm text-[#374151]">
+              58
+            </span>
+          </div>
+
+          <!-- Sub-info: Day Progress or Status -->
+          <div id="subStatus" class="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-600/80 font-gowun tracking-wider">
+            오늘의 시간이 따뜻하게 흐르고 있어요 ✨
+          </div>
+
+        </div>
+
+        <!-- Ambient Glow border effect -->
+        <div class="absolute inset-0 rounded-full border border-white/40 pointer-events-none"></div>
+      </div>
+
+    </div>
+
+    <!-- CONTROLS & CUSTOMIZATION PANEL -->
+    <div class="w-full max-w-2xl glass-bg rounded-3xl p-5 sm:p-6 shadow-lg border border-white/60">
+      
+      <div class="flex items-center justify-between border-b border-gray-200/50 pb-3 mb-4">
+        <h2 class="text-base sm:text-lg font-bold text-gray-700 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-pink-400"></i>
+          위젯 설정
+        </h2>
+        <span class="text-xs text-gray-400">커스텀 모드</span>
+      </div>
+
+      <!-- Controls Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs sm:text-sm">
+        
+        <!-- 12/24 Hour Format Toggle -->
+        <div class="flex flex-col gap-1.5 bg-white/60 p-3 rounded-2xl shadow-sm">
+          <label class="text-gray-500 font-bold flex items-center justify-between">
+            <span>시간 표기 방식</span>
+            <i class="fa-regular fa-clock text-gray-400"></i>
+          </label>
+          <div class="flex bg-gray-200/60 p-1 rounded-xl">
+            <button id="btn12h" onclick="setFormat('12')" class="flex-1 py-1.5 rounded-lg text-center font-bold transition-all bg-white text-gray-700 shadow-sm">12시간제</button>
+            <button id="btn24h" onclick="setFormat('24')" class="flex-1 py-1.5 rounded-lg text-center font-bold transition-all text-gray-500 hover:text-gray-700">24시간제</button>
+          </div>
+        </div>
+
+        <!-- Seconds Display Toggle -->
+        <div class="flex flex-col gap-1.5 bg-white/60 p-3 rounded-2xl shadow-sm">
+          <label class="text-gray-500 font-bold flex items-center justify-between">
+            <span>초 단위 표시</span>
+            <i class="fa-solid fa-stopwatch text-gray-400"></i>
+          </label>
+          <button id="btnToggleSeconds" onclick="toggleSeconds()" class="w-full py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-600 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>초(Seconds) 켜짐</span>
+          </button>
+        </div>
+
+        <!-- Font Style Switcher -->
+        <div class="flex flex-col gap-1.5 bg-white/60 p-3 rounded-2xl shadow-sm">
+          <label class="text-gray-500 font-bold flex items-center justify-between">
+            <span>글씨체 (Font)</span>
+            <i class="fa-solid fa-font text-gray-400"></i>
+          </label>
+          <select id="fontSelect" onchange="changeFont(this.value)" class="w-full py-1.5 px-2 bg-white rounded-xl border border-gray-200 text-gray-700 font-bold focus:outline-none focus:ring-2 focus:ring-pink-300">
+            <option value="font-jua" selected>Jua (동글동글 귀여움)</option>
+            <option value="font-gaegu">Gaegu (손글씨 느낌)</option>
+            <option value="font-gowun">Gowun Dodum (고운 고딕)</option>
+            <option value="font-fredoka">Fredoka (라틴 라운드)</option>
+          </select>
+        </div>
+
+        <!-- Theme Preset Buttons -->
+        <div class="flex flex-col gap-1.5 bg-white/60 p-3 rounded-2xl shadow-sm sm:col-span-2 lg:col-span-2">
+          <label class="text-gray-500 font-bold flex items-center justify-between">
+            <span>파스텔 그래디언트 테마</span>
+            <i class="fa-solid fa-palette text-gray-400"></i>
+          </label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setTheme('theme-pastel-pink-sky')" title="파스텔 핑크-하늘색" class="h-8 rounded-xl bg-gradient-to-r from-[#fbc2eb] to-[#a6c1ee] border-2 border-white shadow-sm hover:scale-105 transition-all active:scale-95"></button>
+            <button onclick="setTheme('theme-cotton-candy')" title="코튼캔디" class="h-8 rounded-xl bg-gradient-to-r from-[#ffb3ba] via-[#ffdfba] to-[#bae1ff] border-2 border-white shadow-sm hover:scale-105 transition-all active:scale-95"></button>
+            <button onclick="setTheme('theme-mint-lavender')" title="민트 라벤더" class="h-8 rounded-xl bg-gradient-to-r from-[#b5ead7] to-[#c7ceea] border-2 border-white shadow-sm hover:scale-105 transition-all active:scale-95"></button>
+            <button onclick="setTheme('theme-sunset-glow')" title="노을빛 핑크" class="h-8 rounded-xl bg-gradient-to-r from-[#ff9a9e] to-[#fecfef] border-2 border-white shadow-sm hover:scale-105 transition-all active:scale-95"></button>
+          </div>
+        </div>
+
+        <!-- Sound & Fullscreen Toggle -->
+        <div class="flex flex-col gap-1.5 bg-white/60 p-3 rounded-2xl shadow-sm">
+          <label class="text-gray-500 font-bold flex items-center justify-between">
+            <span>부가 효과</span>
+            <i class="fa-solid fa-volume-high text-gray-400"></i>
+          </label>
+          <div class="flex gap-2">
+            <button id="btnSound" onclick="toggleSound()" class="flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all flex items-center justify-center gap-1">
+              <i id="soundIcon" class="fa-solid fa-volume-xmark"></i>
+              <span id="soundText">음소거</span>
+            </button>
+            <button onclick="toggleFullScreen()" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all" title="전체화면">
+              <i class="fa-solid fa-expand"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-xs text-gray-400 font-gowun z-10">
+    <p>© 2026 Pastel Capsule Digital Clock Widget. Designed with soft gradients & 3D shadow.</p>
+  </footer>
+
+  <script>
+    // App State Configuration
+    let config = {
+      is24Hour: false,
+      showSeconds: true,
+      soundEnabled: false,
+      currentTheme: 'theme-pastel-pink-sky',
+      currentFont: 'font-jua'
+    };
+
+    // DOM Elements
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    const secColonEl = document.getElementById('secColon');
+    const ampmBadgeEl = document.getElementById('ampmBadge');
+    const dateDisplayEl = document.getElementById('dateDisplay');
+    const capsuleWidgetEl = document.getElementById('capsuleWidget');
+    const clockBgEl = document.getElementById('clockBg');
+    const subStatusEl = document.getElementById('subStatus');
+
+    // Audio Context for subtle clock tick sound without external audio files
+    let audioCtx = null;
+
+    function playSoftTick() {
+      if (!config.soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        // Gentle soft pitch tick
+        osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.03);
+
+        gain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.03);
+      } catch (e) {
+        console.warn('Audio play restricted', e);
+      }
+    }
+
+    const daysKR = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+    function updateClock() {
+      const now = new Date();
+
+      let h = now.getHours();
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+
+      // Handle AM / PM
+      let ampm = 'AM';
+      if (!config.is24Hour) {
+        ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12; // '0' should be '12'
+      } else {
+        ampmBadgeEl.style.display = 'none';
+      }
+
+      if (!config.is24Hour) {
+        ampmBadgeEl.style.display = 'inline-block';
+        ampmBadgeEl.textContent = ampm;
+      }
+
+      // Format with leading zeroes
+      const formattedHours = String(h).padStart(2, '0');
+      const formattedMinutes = String(m).padStart(2, '0');
+      const formattedSeconds = String(s).padStart(2, '0');
+
+      // Update text content
+      if (hoursEl.textContent !== formattedHours) hoursEl.textContent = formattedHours;
+      if (minutesEl.textContent !== formattedMinutes) minutesEl.textContent = formattedMinutes;
+      if (secondsEl.textContent !== formattedSeconds) secondsEl.textContent = formattedSeconds;
+
+      // Update Date string
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const date = now.getDate();
+      const dayName = daysKR[now.getDay()];
+
+      dateDisplayEl.textContent = `${year}년 ${month}월 ${date}일 ${dayName}`;
+
+      // Update sub message according to time of day
+      const rawHour = now.getHours();
+      if (rawHour >= 6 && rawHour < 12) {
+        subStatusEl.textContent = '상쾌하고 포근한 아침 시간입니다 ☀️';
+      } else if (rawHour >= 12 && rawHour < 18) {
+        subStatusEl.textContent = '따뜻하고 활기찬 오후 보내세요 ☕';
+      } else if (rawHour >= 18 && rawHour < 22) {
+        subStatusEl.textContent = '편안하고 은은한 저녁 시간입니다 🌙';
+      } else {
+        subStatusEl.textContent = '조용하고 감성적인 밤입니다 ⭐';
+      }
+
+      // Play soft tick on every second
+      playSoftTick();
+    }
+
+    function setFormat(format) {
+      const btn12 = document.getElementById('btn12h');
+      const btn24 = document.getElementById('btn24h');
+
+      if (format === '12') {
+        config.is24Hour = false;
+        btn12.className = "flex-1 py-1.5 rounded-lg text-center font-bold transition-all bg-white text-gray-700 shadow-sm";
+        btn24.className = "flex-1 py-1.5 rounded-lg text-center font-bold transition-all text-gray-500 hover:text-gray-700";
+      } else {
+        config.is24Hour = true;
+        btn24.className = "flex-1 py-1.5 rounded-lg text-center font-bold transition-all bg-white text-gray-700 shadow-sm";
+        btn12.className = "flex-1 py-1.5 rounded-lg text-center font-bold transition-all text-gray-500 hover:text-gray-700";
+      }
+      updateClock();
+    }
+
+    function toggleSeconds() {
+      config.showSeconds = !config.showSeconds;
+      const btn = document.getElementById('btnToggleSeconds');
+
+      if (config.showSeconds) {
+        secondsEl.style.display = 'inline';
+        secColonEl.style.display = 'inline';
+        btn.innerHTML = `<i class="fa-solid fa-check text-xs"></i> <span>초(Seconds) 켜짐</span>`;
+        btn.className = "w-full py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-600 rounded-xl font-bold transition-all flex items-center justify-center gap-2";
+      } else {
+        secondsEl.style.display = 'none';
+        secColonEl.style.display = 'none';
+        btn.innerHTML = `<i class="fa-solid fa-xmark text-xs"></i> <span>초(Seconds) 숨김</span>`;
+        btn.className = "w-full py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-xl font-bold transition-all flex items-center justify-center gap-2";
+      }
+    }
+
+    function changeFont(fontClass) {
+      // Remove previous font classes from time digits
+      const fontClasses = ['font-jua', 'font-gaegu', 'font-gowun', 'font-fredoka'];
+      fontClasses.forEach(cls => {
+        hoursEl.classList.remove(cls);
+        minutesEl.classList.remove(cls);
+        secondsEl.classList.remove(cls);
+      });
+
+      // Add selected font class
+      hoursEl.classList.add(fontClass);
+      minutesEl.classList.add(fontClass);
+      secondsEl.classList.add(fontClass);
+      config.currentFont = fontClass;
+    }
+
+    function setTheme(themeClass) {
+      const themes = ['theme-pastel-pink-sky', 'theme-cotton-candy', 'theme-mint-lavender', 'theme-sunset-glow'];
+      themes.forEach(t => clockBgEl.classList.remove(t));
+      clockBgEl.classList.add(themeClass);
+      config.currentTheme = themeClass;
+    }
+
+    function toggleSound() {
+      config.soundEnabled = !config.soundEnabled;
+      const btn = document.getElementById('btnSound');
+      const icon = document.getElementById('soundIcon');
+      const text = document.getElementById('soundText');
+
+      if (config.soundEnabled) {
+        icon.className = "fa-solid fa-volume-high text-pink-500";
+        text.textContent = "소리 켜짐";
+        btn.className = "flex-1 py-1.5 bg-pink-100 text-pink-600 rounded-xl font-bold transition-all flex items-center justify-center gap-1";
+      } else {
+        icon.className = "fa-solid fa-volume-xmark";
+        text.textContent = "음소거";
+        btn.className = "flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all flex items-center justify-center gap-1";
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn(`Fullscreen request failed: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    window.onload = function() {
+      updateClock();
+      setInterval(updateClock, 1000);
+    };
+  </script>
+</body>
+</html>
